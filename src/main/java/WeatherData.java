@@ -1,13 +1,17 @@
+import java.util.ArrayList;
+
 public class WeatherData implements Subject{
     private float temperature; //Значение температуры
     private float humidity; //Значение влажности воздуха
     private float pressure; //Значние давление
 
-    private CurrentConditionsDisplay currentConditionsDisplay; //Экран с текущими данными погоды
+    private ArrayList<Observer> observers;
 
-    private StatisticsDisplay statisticsDisplay; //Экран статистики погоды
+    private Observer observer;
 
-    private ForecastDisplay forecastDisplay; //Экран прогноза погоды
+    public WeatherData(){
+        observers = new ArrayList<>();
+    }
 
     public float getTemperature() {
         return temperature;
@@ -31,17 +35,16 @@ public class WeatherData implements Subject{
         float temp = getTemperature();
         float humidity = getHumidity();
         float pressure = getPressure();
+    }
 
+
+    @Override
+    public void registerObserver(Observer observer) {
 
     }
 
     @Override
-    public void registerObserver() {
-
-    }
-
-    @Override
-    public void removeObserver() {
+    public void removeObserver(Observer observer) {
 
     }
 
