@@ -1,12 +1,11 @@
-public class CurrentConditionsDisplay implements Observer, DisplayElement{
+public class CurrentConditionsDisplay implements Observer, DisplayElement {
+    private float temperature; //Значение температуры
+    private float humidity; //Значение влажности воздуха
+    private Subject weatherDate; //Переменная для данных о погоде
 
-    private float temperature;
-    private float humidity;
-    private Subject weatherData;
-
-    public CurrentConditionsDisplay(Subject weatherData){
-        this.weatherData = weatherData;
-        weatherData.registerObserver(this);
+    public CurrentConditionsDisplay(Subject weatherDate) {
+        this.weatherDate = weatherDate;
+        weatherDate.registerObserver(this);
     }
 
     @Override
@@ -19,6 +18,6 @@ public class CurrentConditionsDisplay implements Observer, DisplayElement{
     @Override
     public void display() {
         System.out.println("Current conditions: " + temperature
-        + "C degrees and " + humidity + "% humidity");
+                + "C degrees and " + humidity + "% humidity");
     }
 }

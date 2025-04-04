@@ -2,6 +2,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
+
 import java.io.FileWriter;
 import java.util.ArrayList;
 
@@ -52,6 +53,8 @@ public class WeatherData implements Subject {
             for (String currentLine : linesHtmlCode) {
                 getValuePressure(currentLine.strip());
             }
+            getValueHumidity();
+            getValueTemperatureAir();
 
         } catch (Exception ex) {
             ex.getMessage();
@@ -60,14 +63,14 @@ public class WeatherData implements Subject {
 
     public float getValuePressure(String lineHtmlCode) {
         String templateForValuePressure = "pressure-value value=\"";
-        float pressure = 0f;
-
+        float pressure = 0;
         int leftIndexForValuePressure = lineHtmlCode.indexOf(templateForValuePressure);
         if (leftIndexForValuePressure != -1) {
             leftIndexForValuePressure += templateForValuePressure.length();
             int rightIndexForValuePressure = lineHtmlCode.indexOf("\"", leftIndexForValuePressure);
             String valuePressure = lineHtmlCode.substring(leftIndexForValuePressure, rightIndexForValuePressure);
-            System.out.println("Давление \"" + valuePressure + "\"");
+            pressure = Float.parseFloat(valuePressure);
+            this.pressure = pressure;
             return pressure;
         }
         return pressure;
@@ -76,7 +79,7 @@ public class WeatherData implements Subject {
     public float getValueTemperatureAir() {
         String[] arrayLinesHtmlCode = htmlCode.split("\n");
         String templateForTemperatureAir = "temperatureAir\":[";
-        float temperatureAir = 0f;
+        float temperatureAir = 0;
 
         for (String lineHtmlCode : arrayLinesHtmlCode) {
             int leftIndexForTemperatureAir = lineHtmlCode.indexOf(templateForTemperatureAir);
@@ -84,8 +87,8 @@ public class WeatherData implements Subject {
                 leftIndexForTemperatureAir += templateForTemperatureAir.length();
                 int rightIndexForTemperatureAir = lineHtmlCode.indexOf("]", leftIndexForTemperatureAir);
                 String strTemperatureAir = lineHtmlCode.substring(leftIndexForTemperatureAir, rightIndexForTemperatureAir);
-                System.out.println(temperatureAir);
-                return Float.parseFloat(strTemperatureAir);
+                temperatureAir = Float.parseFloat(strTemperatureAir);
+                return temperatureAir;
             }
         }
         return temperatureAir;
@@ -93,22 +96,22 @@ public class WeatherData implements Subject {
 
     public float getValueHumidity() {
         String[] arrayLinesHtmlCode = htmlCode.split("\n");
-        String templateForHumidity = "Humidity\":[";
-        float endHumidity = 0f;
+        String templateForTemperatureAir = "humidity\":[";
+        float humidity = 0;
 
         for (String lineHtmlCode : arrayLinesHtmlCode) {
-            int leftIndexForHumidity = lineHtmlCode.indexOf(templateForHumidity);
+            int leftIndexForHumidity = lineHtmlCode.indexOf(templateForTemperatureAir);
             if (leftIndexForHumidity != -1) {
-                leftIndexForHumidity += templateForHumidity.length();
+                leftIndexForHumidity += templateForTemperatureAir.length();
                 int rightIndexForHumidity = lineHtmlCode.indexOf("]", leftIndexForHumidity);
-                String humidity = lineHtmlCode.substring(leftIndexForHumidity, rightIndexForHumidity);
-                System.out.println(humidity);
-                return Float.parseFloat(humidity);
+                String strHumidity = lineHtmlCode.substring(leftIndexForHumidity, rightIndexForHumidity);
+                humidity = Float.parseFloat(strHumidity);
+                this.humidity = humidity;
+                return humidity;
             }
         }
-        return endHumidity;
+        return humidity;
     }
-
 
     public void measurementsChanged() {
         float temp = getTemperature();
