@@ -11,8 +11,17 @@ public class WeatherStation {
         );
         currentConditionsDisplay.display();
 
+
         ForecastDisplay forecastDisplay = new ForecastDisplay();
         forecastDisplay.getDaysAndMinMaxValuesTemperature();
+        System.out.println("Список всех температур: " + forecastDisplay.getListAllTemperatureAir());
+        System.out.println("Список мин. температур: " + forecastDisplay.getListMinTemperatureAir());
+        System.out.println("Список макс. температур: " + forecastDisplay.getListMaxTemperatureAir());
+        forecastDisplay.getDaysAndMinMaxValuesTemperature();
         forecastDisplay.display();
+
+        StatisticsDisplay statisticsDisplay = new StatisticsDisplay(forecastDisplay);
+        statisticsDisplay.getAverageValueAllTemperatureAir();
+        statisticsDisplay.display();
     }
 }
