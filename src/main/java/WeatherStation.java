@@ -3,11 +3,16 @@ public class WeatherStation {
         WeatherData weatherData = new WeatherData();
         weatherData.setMeasurements();
 
-
-        CurrentConditionsDisplay currentConditionsDisplay = new CurrentConditionsDisplay(weatherData);
-        currentConditionsDisplay.update(weatherData.getValueTemperatureAir(), weatherData.getHumidity(), weatherData.getPressure());
+        CurrentConditionsDisplay currentConditionsDisplay = new CurrentConditionsDisplay();
+        currentConditionsDisplay.update(
+                weatherData.getTemperature(),
+                weatherData.getHumidity(),
+                weatherData.getPressure()
+        );
+        currentConditionsDisplay.display();
 
         ForecastDisplay forecastDisplay = new ForecastDisplay();
-        forecastDisplay.getListTemperatureFor10Days();
+        forecastDisplay.getDaysAndMinMaxValuesTemperature();
+        forecastDisplay.display();
     }
 }

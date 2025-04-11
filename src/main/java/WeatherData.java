@@ -1,22 +1,22 @@
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
-import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
 import java.io.FileWriter;
+import java.nio.file.Files;
+import java.nio.file.Paths;
 import java.util.ArrayList;
+import java.util.List;
 
 public class WeatherData implements Subject {
-    private String htmlCode = "";
     private ArrayList<Observer> observers;
-    private float temperature; //Значение температуры
-    private float humidity; //Значение влажности воздуха
-    private float pressure; //Значение давления
-    private Observer observer;
-
-    public WeatherData() {
-        observers = new ArrayList<>();
-    }
+    //Температура
+    private float temperature;
+    //Влажность
+    private float humidity;
+    //Давление
+    private float pressure;
 
     public float getTemperature() {
         return temperature;
@@ -30,95 +30,71 @@ public class WeatherData implements Subject {
         return pressure;
     }
 
-    public void update(float temperature, float humidity, float pressure) {
-        this.temperature = temperature;
-        this.humidity = humidity;
-        this.pressure = pressure;
+    public WeatherData() {
+        observers = new ArrayList<>();
+    }
+
+    public void measurementsChanged() {
+        notifyObservers();
     }
 
     public void setMeasurements() {
-        String pathToSiteWithWeather = "https://www.gismeteo.ru/weather-sochi-5233/now/?ysclid=m7ygx5iind808010376";
-        String pathToFileWithHtmlCode = "src/main/resources/data/fileWithHtmlCode.html";
+        String urlSiteWeather = "https://www.gismeteo.ru/weather-sochi-5233/now/";
+        String pathToFileWithHtmlCode = "data/htmlSiteForWeather.html";
         try {
-            Document documentForGetHtmlCode = Jsoup.connect(pathToSiteWithWeather).get();
-            htmlCode = String.valueOf(documentForGetHtmlCode);
-
+            Document document = Jsoup.connect(urlSiteWeather).get();
+            String htmlCodeText = String.valueOf(document);
             FileWriter fileWriter = new FileWriter(pathToFileWithHtmlCode);
-            fileWriter.write(String.valueOf(documentForGetHtmlCode));
+            fileWriter.write(htmlCodeText);
 
-            Elements elements = documentForGetHtmlCode.select(".item-value");
 
-            String[] linesHtmlCode = String.valueOf(elements).split("\n");
-
-            for (String currentLine : linesHtmlCode) {
-                getValuePressure(currentLine.strip());
+            String[] linesHtmlCode = htmlCodeText.split("\n");
+            for (String currentLineHtmlCode : linesHtmlCode) {
+                currentLineHtmlCode = currentLineHtmlCode.strip();
+                getValuePressure(currentLineHtmlCode);
+                getValueHumidity(currentLineHtmlCode);
+                getValueTemperature(currentLineHtmlCode);
             }
-            getValueHumidity();
-            getValueTemperatureAir();
 
         } catch (Exception ex) {
             ex.getMessage();
         }
+        measurementsChanged();
     }
 
-    public float getValuePressure(String lineHtmlCode) {
-        String templateForValuePressure = "pressure-value value=\"";
-        float pressure = 0;
-        int leftIndexForValuePressure = lineHtmlCode.indexOf(templateForValuePressure);
-        if (leftIndexForValuePressure != -1) {
-            leftIndexForValuePressure += templateForValuePressure.length();
-            int rightIndexForValuePressure = lineHtmlCode.indexOf("\"", leftIndexForValuePressure);
-            String valuePressure = lineHtmlCode.substring(leftIndexForValuePressure, rightIndexForValuePressure);
-            pressure = Float.parseFloat(valuePressure);
-            this.pressure = pressure;
-            return pressure;
+    public void getValuePressure(String line) {
+        String templateForPressure = "<pressure-value value=\"";
+        int leftIndexForPressure = line.indexOf(templateForPressure);
+        if (leftIndexForPressure != -1) {
+            leftIndexForPressure += templateForPressure.length();
+            int rightIndexForPressure = line.indexOf("\"", leftIndexForPressure);
+            String pressureValue = line.substring(leftIndexForPressure, rightIndexForPressure);
+            pressure = Float.parseFloat(pressureValue);
         }
-        return pressure;
     }
 
-    public float getValueTemperatureAir() {
-        String[] arrayLinesHtmlCode = htmlCode.split("\n");
-        String templateForTemperatureAir = "temperatureAir\":[";
-        float temperatureAir = 0;
-
-        for (String lineHtmlCode : arrayLinesHtmlCode) {
-            int leftIndexForTemperatureAir = lineHtmlCode.indexOf(templateForTemperatureAir);
-            if (leftIndexForTemperatureAir != -1) {
-                leftIndexForTemperatureAir += templateForTemperatureAir.length();
-                int rightIndexForTemperatureAir = lineHtmlCode.indexOf("]", leftIndexForTemperatureAir);
-                String strTemperatureAir = lineHtmlCode.substring(leftIndexForTemperatureAir, rightIndexForTemperatureAir);
-                temperatureAir = Float.parseFloat(strTemperatureAir);
-                return temperatureAir;
-            }
+    public void getValueHumidity(String line) {
+        String templateForHumidity = "\"humidity\":[";
+        int leftIndexForHumidity = line.indexOf(templateForHumidity);
+        if (leftIndexForHumidity != -1) {
+            leftIndexForHumidity += templateForHumidity.length();
+            int rightIndexForHumidity = line.indexOf("]", leftIndexForHumidity);
+            String humidityValue = line.substring(leftIndexForHumidity, rightIndexForHumidity);
+            humidity = Float.parseFloat(humidityValue);
         }
-        return temperatureAir;
     }
 
-    public float getValueHumidity() {
-        String[] arrayLinesHtmlCode = htmlCode.split("\n");
-        String templateForTemperatureAir = "humidity\":[";
-        float humidity = 0;
-
-        for (String lineHtmlCode : arrayLinesHtmlCode) {
-            int leftIndexForHumidity = lineHtmlCode.indexOf(templateForTemperatureAir);
-            if (leftIndexForHumidity != -1) {
-                leftIndexForHumidity += templateForTemperatureAir.length();
-                int rightIndexForHumidity = lineHtmlCode.indexOf("]", leftIndexForHumidity);
-                String strHumidity = lineHtmlCode.substring(leftIndexForHumidity, rightIndexForHumidity);
-                humidity = Float.parseFloat(strHumidity);
-                this.humidity = humidity;
-                return humidity;
-            }
+    public void getValueTemperature(String line) {
+        String templateForTemperature = "\"temperatureAir\":[";
+        int leftIndexForTemperature = line.indexOf(templateForTemperature);
+        if (leftIndexForTemperature != -1) {
+            leftIndexForTemperature += templateForTemperature.length();
+            int rightIndexForTemperature = line.indexOf("]", leftIndexForTemperature);
+            String temperatureValue = line.substring(leftIndexForTemperature, rightIndexForTemperature);
+            temperature = Float.parseFloat(temperatureValue);
         }
-        return humidity;
     }
 
-    public void measurementsChanged() {
-        float temp = getTemperature();
-        float humidity = getHumidity();
-        float pressure = getPressure();
-
-    }
 
     @Override
     public void registerObserver(Observer observer) {
@@ -127,14 +103,14 @@ public class WeatherData implements Subject {
 
     @Override
     public void removeObserver(Observer observer) {
-        int indexCurrentObserver = observers.indexOf(observer);
-        if (indexCurrentObserver != -1) {
-            observers.remove(indexCurrentObserver);
+        int indexObserverInList = observers.indexOf(observer);
+        if (indexObserverInList >= 0) {
+            observers.remove(indexObserverInList);
         }
     }
 
     @Override
-    public void notifyObserver() {
+    public void notifyObservers() {
         for (int indexCurrentObserver = 0; indexCurrentObserver < observers.size(); indexCurrentObserver++) {
             Observer observer = observers.get(indexCurrentObserver);
             observer.update(temperature, humidity, pressure);
